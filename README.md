@@ -1,104 +1,127 @@
-# ソフトウェア実験Ⅱ・Ⅲ（マルチタスクカーネルの作成）
+# ソフトウェア実験Ⅱ・Ⅲ：マルチタスクカーネル
 
-MC68VZ328（68000 互換）ボードで動く，C 言語のマルチタスクカーネルを作る班リポジトリ。メンバーは 5 人。
-ページ番号はテキスト `C-jikken_SW2_3_20241210.pdf` の印刷ページ。
+MC68VZ328（68000 互換）ボードで動くマルチタスクカーネルを C 言語で作る、5 人の班のリポジトリ。
 
-**このリポジトリの一番上がそのまま `mtk` フォルダ**。実験室では `~/mtk` に clone する。
+## はじめに
+
+**このリポジトリの一番上がそのまま `mtk` フォルダ**。実験室の PC では `~/mtk` に clone する。
+
+> [!WARNING]
+> **`~/mtk` にはテーマ1 のファイル（自分の `mon.s`, `inchrw.s`, `outchr.s`, `test1.c` など）が残っているはず。** clone の前に名前を変えて退避する（`~/mtk` があると clone できない）。
+> ```sh
+> mv ~/mtk ~/mtk.theme1
+> ```
+> 退避したファイルは、clone した後に自分の `theme1/<名前>/` へコピーしてコミットしておく（[テーマ1](#テーマ1個人)）。
 
 ```sh
-git clone https://github.com/KamiiAoto/softexp2-os.git ~/mtk   # 初回だけ（~/mtk が既にあれば先に退避する）
+git clone https://github.com/KamiiAoto/softexp2-os.git ~/mtk   # 初回だけ（先に上の退避をする）
 cd ~/mtk && git pull                                            # 作業の前に必ず
+make test2                                                      # test2.abs ができる
+m68k-term                                                       # C-\ c → xm test2.abs → c → 何かキー
 ```
 
-ソフトウェア実験Ⅰ（アセンブラの簡易 OS `simple_os.s`）は別のリポジトリ [`softexp-os`](https://github.com/KamiiAoto/softexp-os) の `sw1/` にある。
+- 準備のコマンドは要らない。`make test1`〜`test3` が必要なものを自動で用意する（[ビルドの仕組み](#ビルドの仕組み)）。
+- `make` は実験室の PC でしか動かない。
+- テキストのページ番号は `C-jikken_SW2_3_20241210.pdf` の印刷ページ。
 
-| テーマ | 内容 | 作業形態 | 置き場所 |
-|---|---|---|
-| テーマ1 | C 言語ライブラリの移植（`inbyte`/`outbyte`，`test1.c`） | **個人**（相談は可） | `theme1/<名前>/` |
-| テーマ2 | マルチタスクカーネル（`mtk_c.c`, `mtk_asm.s`, `test2.c`） | **班で分担** | 一番上 |
-| テーマ3 共同開発部 | fd 対応・`fcntl`（`inchrw.s`, `outchr.s`, `csys68k.c`） | **班** | 一番上 |
-| テーマ3 個人開発部 | マルチタスクアプリ | **個人** | `user_<名前>.c` |
+## フォルダ構成
 
-提出（テキスト p.3–4）: カーネルは班で 1 つ，user タスクは個人ごと。どのファイルが誰のものか分かるように，ファイル名に名前を入れる。
+```
+~/mtk/
+├── mtk_c.h, mtk_c.c, mtk_asm.s, test2.c   テーマ2・3 のカーネル（班で 1 つ）
+├── crt0.s, csys68k.c, inchrw.s, outchr.s  配布のひな形（テーマ3 で直す）
+├── Makefile, Makefile.1〜3                ビルド設定
+├── theme1/<名前>/                         テーマ1（個人）
+└── dist/                                  配布ファイル（中身は変えない）
+```
+
+## テーマと担当
+
+| テーマ | 内容 | 作業 | 置き場所 |
+|---|---|---|---|
+| テーマ1 | C ライブラリの移植（`inbyte`/`outbyte`） | 個人 | `theme1/<名前>/` |
+| テーマ2 | マルチタスクカーネル | 班で分担 | 一番上 |
+| テーマ3 共同開発部 | fd 対応・`fcntl` | 班 | 一番上 |
+| テーマ3 個人開発部 | マルチタスクアプリ | 個人 | `user_<名前>.c` |
+
+提出（p.3–4）: カーネルは班で 1 つ、user タスクは個人ごと。誰のファイルか分かるように、ファイル名に名前を入れる。
 
 ## 日程
 
 | 日付 | 内容 |
 |---|---|
-| 11/24(火) | 実験開始・テーマ1（1日目: 環境整備・`mon.s` の加工） |
-| 11/26 頃 | 2日目: テーマ1 完成・小テスト |
-| 11/27(金) | テーマ1 終了・テーマ2 開始（3日目: 分担決定） |
-| 12/1(火) | テーマ1 試問の告示 |
+| 11/27(金) | テーマ1 終了・テーマ2 開始（分担決定） |
 | 12/10(木) | テーマ2 終了・テーマ3 開始 |
-| **12/16(水)** | **テーマ1 レポート提出締切・テーマ1 試問** |
+| **12/16(水)** | **テーマ1 レポート締切・試問** |
 | 12/22(火) | テーマ2,3 試問の告示 |
-| **1/7(木)** | **テーマ2,3 レポート提出締切**・試問（1–6 班 1/7，7–12 班 1/8） |
+| **1/7(木)** | **テーマ2,3 レポート締切・試問**（1–6 班 1/7、7–12 班 1/8） |
 
-## ビルドの仕組み（実験室の PC）
+## テーマ2：何を作るか
 
-**clone したら `make test1`〜`test3` だけでビルドできる**（準備のコマンドは要らない）。Makefile が次の 2 つを自動でやる。
+### ゴール
 
-- **`~/.local/lib/soft-jikken/make.conf` がなければ，`dist/soft-jikken.tgz` を `~` に展開する**（初回だけ）。
-  実験室の `/usr/local/lib/soft-jikken/make.conf` のままだと，リンクで `cannot find -lgcc` になる。
-  原因: 実験室の `m68k-elf-gcc` は 11 に更新されたが，`make.conf` が古いまま gcc 5 の場所（`-L/usr/local/lib/gcc/m68k-elf/5`）で `libgcc.a` を探している（`5/` には `libgcc.a` がない。2026-11-27 確認）。また `.LIS` を作る `gal.py` が Python 2 用のまま。
-  `dist/soft-jikken.tgz` は Moodle で配布された修正版（gcc 11 の場所と `python3 gal3.py` に直した `make.conf`。`dist/soft-jikken_instructions.txt`）。
-- **一番上（カーネル）では，`mon.o` をリファレンスモニタの tgz から取り出し，空の `mon.glis` を作る**（下の「テーマ2・3」）。
+複数の C の関数（**ユーザタスク**）を、切り替えながら同時に動かす**カーネル**を作る（テキスト 2.1 p.20）。
+タスクが切り替わるきっかけは 2 つ。
 
-一番上の `Makefile` は Moodle 版（`dist/Makefile.moodle`）をもとに，`LIB_JIKKEN ?= $(HOME)/.local/lib/soft-jikken` にして上の展開ルールを足したもの。
-子の make に `$(MAKEFLAGS)` を渡す行は消したので，`make test2 LIB_JIKKEN=...` で別の場所も指せる。
+1. **タイマ割込み**: 一定時間たったら次のタスクへ（時分割）
+2. **セマフォの P**: 資源が取れなかったタスクは休眠し、V で起こされるまで待つ
 
-## テーマ1（個人）
+完成すると、`test2.c` の 2 つ以上のタスクが交互に `printf` するようになる。
 
-自分のフォルダ `theme1/<名前>/` を作り，そこを `mtk` フォルダとして使う（`theme1/kamii/` は済み）。
-テーマ1 は個人作業。班内で相談してよいが，最後は自分で作る（`06 2日目の目標.txt`）。他人のフォルダは編集しない。
+### しくみ（3 つの部品）
 
-```sh
-cd ~/mtk && git pull
-mkdir -p theme1/<名前> && cd theme1/<名前>
-tar xzf ../../dist/mtk-hina.tgz --strip-components=1   # 配布の mtk フォルダの中身をここに展開
-cp ../kamii/Makefile .                                 # soft-jikken の自動展開つきの Makefile（../../dist を見る）
-cp <ソフトウェア実験Ⅰの simple_os.s> mon.s             # 簡易 OS を mon.s にする
-```
+| 層 | 中身 |
+|---|---|
+| ユーザ（`test2.c`） | `main()`: `init_kernel` → `set_task` × n → `begin_sch`。タスク `task1()`, `task2()`, … は `P()` / `V()` を呼ぶ |
+| カーネル：タスク管理 | TCB、ready キュー、タスクごとのスタック |
+| カーネル：タイマ | `hard_clock`: 割込みのたびに今のタスクを ready の末尾へ戻し、次のタスクへ `swtch` |
+| カーネル：セマフォ | `pv_handler` → `p_body` / `v_body` → `sleep` / `wakeup` → `swtch` |
+| モニタ（配布の `mon.o`） | `trap #0` の入出力（GETSTRING / PUTSTRING）とタイマ設定（SET_TIMER） |
 
-展開されるファイル: `crt0.s`, `csys68k.c`（`read`/`write`），`inchrw.s`・`outchr.s`（ラベルだけの空ファイル），`Makefile`, `Makefile.1`〜`.3`。
-`make` は実験室の PC でしか動かない。
+- **TCB**（タスクごとの管理表）に、中断したときのスタックの位置（SSP）を覚えておく
+- **ready キュー**に、実行を待っているタスクが並ぶ。セマフォごとにも待ちキューがある
+- タスクを切り替えるとき（`swtch`）は、今のタスクのレジスタを全部スタックに積み、次のタスクのスタックから全部戻す
 
-自分で作る・直すファイル:
+### 作る関数（`mtk_c.c` と `mtk_asm.s` に雛形あり）
 
-| ファイル | やること | テキスト |
+| 部品 | 関数 | 言語 | 何をするか | テキスト |
+|---|---|---|---|---|
+| データ構造 | `mtk_c.h` | C | TCB・セマフォ・スタックの型、定数、大域変数 | p.32–35 |
+| キュー | `addq` / `removeq` | C | キューの末尾に入れる／先頭から取り出す | p.37 |
+| | `sched` | C | ready の先頭を次に走るタスクにする | p.38 |
+| タスクの登録と開始 | `init_kernel` | C | TCB・キューを空にし、`pv_handler` を `trap #1` に登録 | p.35 |
+| | `set_task` | C | タスクを TCB に登録して ready につなぐ | p.36 |
+| | `init_stack` | C | 初めて走るタスク用に、スタックを「中断した形」に作る | p.36–37 |
+| | `begin_sch` | C | 最初のタスクを選び、タイマを始めて起動する | p.36 |
+| | `first_task` | asm | 最初のタスクのレジスタをスタックから戻して起動する | p.38–39 |
+| タスク切替え | `swtch` | asm | 今のタスクを保存して、`next_task` を再開する | p.40–41 |
+| タイマ | `init_timer` | asm | モニタの `trap #0` でタイマ割込みを設定する | p.41 |
+| | `hard_clock` | asm | タイマ割込みのたびに、今のタスクを ready に戻して切り替える | p.41 |
+| セマフォ | `P` / `V` | asm | `trap #1` でカーネルを呼ぶ（P = 0 番、V = 1 番） | p.39 |
+| | `pv_handler` | asm | `trap #1` の入口。割込みを止めて `p_body` / `v_body` を呼ぶ | p.39–40 |
+| | `p_body` / `v_body` | C | セマフォの値を減らす／増やす。必要なら休眠・起床 | p.37–38 |
+| | `sleep` / `wakeup` | C | セマフォのキューで休眠させる／ready に戻す | p.38 |
+| テスト | `test2.c` | C | `main` と、交互に動くことを確かめる user タスク | p.42–48 |
+
+**合わせるのが大事なところ**（担当どうしで話し合う）:
+- `init_stack` が積む順番 ⇔ `first_task`・`swtch` が戻す順番（図 2.8 p.37）
+- TCB のフィールドの並び ⇔ asm 側のオフセット（`mtk_asm.s` の `TCB_SIZE`・`TCB_STACK_PTR`）
+
+### 動作確認の段階（テキスト p.42）
+
+| 段階 | やること | 主に確かめる関数 |
 |---|---|---|
-| `mon.s` | `.global monitor_begin` / `.extern start` / `jmp start` を追加。`jmp start` の前で割込みを有効にする | 1.3.2 |
-| `inchrw.s` | `inbyte`（GETSTRING で 1 文字読む。失敗したらリトライ） | 1.4.1 |
-| `outchr.s` | `outbyte`（PUTSTRING で 1 文字書く。失敗したらリトライ） | 1.4.2 |
-| `test1.c` | `main()` の**無限ループの中**にテストを書く（1 回で止まるテストは評価されない） | 1.4.3 |
+| D1 | タイマを切った状態で、最初のタスクが動く | `set_task`, `init_stack`, `begin_sch`, `first_task` |
+| D2 | タイマを入れても（`hard_clock` は何もしない）、最初のタスクが動き続ける | `init_timer` |
+| D3 | タイマでタスクが切り替わり、2 巡目が来る | `hard_clock`, `swtch`, キュー |
+| D4 | セマフォの P・V が正しく動く | `P`, `V`, `pv_handler`, `p_body`, `v_body` |
+| D5 | セマフォでタスクの順番を制御できる（2.5.7 のテスト） | 全体 |
 
-```sh
-make test1        # test1.abs ができる（全部作り直すときは make clean してから）
-```
+## テーマ2・3：分担と進め方
 
-注意: `mon.s` の作業領域は使わない。レジスタは壊すものだけ退避する（`%D0` は戻り値）。
+### 分担
 
-## テーマ2・3（班）
-
-一番上が班で 1 つのカーネル。配布のひな形（`dist/mtk-hina.tgz`）は展開済み。
-
-テーマ2以降は，配布のリファレンスモニタ `mon_r2_230k+sc5v2.o` に差し替えて開発する（2 ポート・230kbps・SKIPMT 対応。`dist/mon_r2_230k+sc5v2.tgz` の readme，`dist/Howto_Replace_mon.txt`）。
-`.o` は git に入らないが，`Makefile.1`〜`.3` に足したルールで自動で用意されるので，**`make test2` だけでよい**（`make clean` の後も同じ）。
-
-```sh
-cd ~/mtk
-make test2
-```
-
-- `mon.o` がなければ `dist/mon_r2_230k+sc5v2.tgz` から取り出す（`tar xzf ... -O mon_r2_230k+sc5v2.o > mon.o`）。
-- `mon.glis` がなければ空のファイルを作る。`test2.LIS` を作るのに `mon.glis`（`mon.s` をアセンブルするとできるリスティング）が要るが，`mon.s` を置かないのでできないため。空でも `gal3.py` は問題なく読む（2026-11-27 実験室で確認）。
-- 一番上には `mon.s` を置かない（置くと make が `mon.s` から `mon.o` を作り直そうとする）。
-
-担当部分ができたら班で読み合わせ → 統合デバッグ（目安: 8日目）。
-
-### 分担（テーマ2）
-
-3日目（11/27）に分担を決めて，下の表を埋める。全員がどこかの機能の開発責任者になる（`08 3日目の目標.txt`，テキスト図2.6）。
+全員がどこかの機能の開発責任者になる（`08 3日目の目標.txt`、テキスト図 2.6）。
 
 | 機能 | 担当 | 主なファイル・関数 |
 |---|---|---|
@@ -108,38 +131,88 @@ make test2
 | | 安森 | |
 | | 田邉 | |
 
-### ファイル
+### 進め方
 
-| ファイル | 内容 |
-|---|---|
-| `mtk_c.h` | カーネルの型・定数・関数の extern 宣言（TCB，セマフォなど） |
-| `mtk_c.c` | C 側のカーネル（キュー操作，P/V，スケジューラなど） |
-| `mtk_asm.s` | アセンブラ側のカーネル（`swtch`，`first_task`，タイマ割込みなど） |
-| `test2.c` | マルチタスクのテスト（main と user タスク） |
-| `user_<名前>.c` | テーマ3 個人開発部のアプリ（個人ごと） |
+1. 担当の関数を書く（`mtk_c.h` を変えるときは班に一声かける）
+2. 担当部分ができたら班で読み合わせ
+3. 統合して、D1 から順にデバッグ（目安: 8日目）
 
-## 配布ファイル（`dist/`。中身は変えない）
+- テーマ2 以降はリファレンスモニタ `mon_r2_230k+sc5v2.o` を使う。`make` が自動で `mon.o` にするので、**一番上には `mon.s` を置かない**。
+- 一番上の `inchrw.s`・`outchr.s` はまだ空。誰かのテーマ1 の `inbyte`/`outbyte` を入れないと `printf` が出ない。
+- テーマ3 個人開発部のアプリは `user_<名前>.c` に書く。
 
-2026-11-24 配布:
+## テーマ1（個人）
 
-| ファイル | 内容 |
-|---|---|
-| `mtk-hina.tgz` | 作業フォルダのひな形（上の「展開されるファイル」） |
-| `mon_r2_230k+sc5v2.tgz` | リファレンスモニタ `mon_r2_230k+sc5v2.o` と readme（2024/12/14 版） |
-| `Howto_Replace_mon.txt` | モニタの差し替え手順（Shift_JIS。`iconv -f SHIFT_JIS -t UTF-8` で読む） |
-| `csys68k_changeBSkey_v2.c` | `csys68k.c` の改良版。BS キーのコードをマクロ（`XTBS` = 0x7f，`ASBS` = 0x08）にしたもの |
-| `test1_escseq.c` | xterm のエスケープシーケンス（カーソル移動・画面消去など）を試すサンプル（EUC-JP。`iconv -f EUC-JP -t UTF-8` で読む） |
+自分のフォルダを作って、そこで作業する（`theme1/kamii/` は済み）。他人のフォルダは編集しない。
 
-2026-11-27 Moodle 追加配布:
+```sh
+cd ~/mtk && git pull
+mkdir -p theme1/<名前> && cd theme1/<名前>
+tar xzf ../../dist/mtk-hina.tgz --strip-components=1   # 配布のひな形を展開
+cp ../kamii/Makefile .                                 # 自動準備つきの Makefile
 
-| ファイル | 内容 |
-|---|---|
-| `soft-jikken.tgz` | 修正版のビルド設定（`~` に展開すると `~/.local/lib/soft-jikken/`）。`make.conf` は gcc 11・`python3` 用，元の版は `make_org.conf` |
-| `Makefile.moodle` | `LIB_JIKKEN=~/.local/lib/soft-jikken` にした `Makefile`（Moodle では `Makefile` という名前） |
-| `soft-jikken_instructions.txt` | 上の 2 つの使い方（Moodle では `instructions.txt`。CRLF） |
+# テーマ1 を ~/mtk で進めていた人（退避した ~/mtk.theme1 から持ってくる）
+cp ~/mtk.theme1/{mon.s,inchrw.s,outchr.s,test1.c} .
+# これから始める人
+cp <ソフトウェア実験Ⅰの simple_os.s> mon.s             # 簡易 OS を mon.s にする
+
+make test1
+git add . && git commit -m "テーマ1（<名前>）" && git push   # 生成物は .gitignore で除かれる
+```
+
+| 作る・直すファイル | やること | テキスト |
+|---|---|---|
+| `mon.s` | `.global monitor_begin` / `.extern start` / `jmp start` を追加。`jmp start` の前で割込みを有効にする | 1.3.2 |
+| `inchrw.s` | `inbyte`：GETSTRING で 1 文字読む。失敗したらリトライ | 1.4.1 |
+| `outchr.s` | `outbyte`：PUTSTRING で 1 文字書く。失敗したらリトライ | 1.4.2 |
+| `test1.c` | `main()` の**無限ループの中**にテストを書く | 1.4.3 |
+
+注意: `mon.s` の作業領域は使わない。レジスタは壊すものだけ退避する（`%D0` は戻り値）。
 
 ## git の決まり
 
-- 作業の前に `git pull`。自分のフォルダ・担当ファイル以外は編集しない。
-- `.o`, `.abs`, `.map` などの生成物はコミットしない（`.gitignore` 済み）。
-- 動いたら `git tag theme1-<名前>` のようにタグを付けておくと後で戻れる。
+- 作業の前に `git pull`
+- 自分のフォルダ・担当の関数以外は編集しない
+- 生成物（`.o`, `.abs`, `.map` など）はコミットしない（`.gitignore` 済み）
+- 動いたらタグを付けておく（例: `git tag theme1-<名前>`）
+
+## 配布ファイル（`dist/`）
+
+| ファイル | 中身 | 配布日 |
+|---|---|---|
+| `mtk-hina.tgz` | 作業フォルダのひな形 | 11/24 |
+| `mon_r2_230k+sc5v2.tgz` | リファレンスモニタと readme（2024/12/14 版） | 11/24 |
+| `Howto_Replace_mon.txt` | モニタの差し替え手順（Shift_JIS） | 11/24 |
+| `csys68k_changeBSkey_v2.c` | BS キーのコードをマクロにした `csys68k.c` | 11/24 |
+| `test1_escseq.c` | xterm のエスケープシーケンスのサンプル（EUC-JP） | 11/24 |
+| `soft-jikken.tgz` | 修正版のビルド設定（gcc 11・`python3` 用の `make.conf`） | 11/27 |
+| `Makefile.moodle` | `LIB_JIKKEN=~/.local/lib/soft-jikken` にした `Makefile` | 11/27 |
+| `soft-jikken_instructions.txt` | 上の 2 つの使い方（Moodle では `instructions.txt`） | 11/27 |
+
+Shift_JIS・EUC-JP のファイルは `iconv -f SHIFT_JIS -t UTF-8 ファイル名` のようにして読む。
+
+## ビルドの仕組み
+
+`make test1`〜`test3` は、足りないものを自動で用意してからビルドする。
+
+| 足りないもの | 自動でやること | 書いてある場所 |
+|---|---|---|
+| `~/.local/lib/soft-jikken/make.conf` | `dist/soft-jikken.tgz` を `~` に展開（初回だけ） | `Makefile` |
+| `mon.o` | `dist/mon_r2_230k+sc5v2.tgz` から取り出す | `Makefile.1`〜`.3`（一番上だけ） |
+| `mon.glis` | 空のファイルを作る | 〃 |
+
+`make clean` で `mon.o` などが消えても、次の `make` でまた用意される。
+
+<details>
+<summary>なぜ必要か（詳しく）</summary>
+
+- **`soft-jikken.tgz`**: 実験室の `/usr/local/lib/soft-jikken/make.conf` は gcc 5 の場所（`-L/usr/local/lib/gcc/m68k-elf/5`）を見ているが、実験室の gcc は 11 で、`5/` には `libgcc.a` がない。そのままだとリンクで `cannot find -lgcc` になる（2026-11-27 確認）。また `.LIS` を作る `gal.py` が Python 2 用のまま。Moodle の `soft-jikken.tgz` はこの 2 点を直した版（元の版は中の `make_org.conf`）。
+- **`mon.o`**: `.o` は git に入らないので、clone したばかりのフォルダにはない。
+- **`mon.glis`**: `testN.LIS` を作るのに `mon.glis`（`mon.s` をアセンブルするとできるリスティング）が要る。`mon.s` を置かないのでできず、`make` が止まってしまう。空のファイルでも `gal3.py` は問題なく読む。
+- `Makefile` は Moodle 版をもとに、`LIB_JIKKEN ?= $(HOME)/.local/lib/soft-jikken` にし、子の make に `$(MAKEFLAGS)` を渡す行を消した。なので `make test2 LIB_JIKKEN=...` で別の場所も指せる。
+
+</details>
+
+## 関連
+
+- ソフトウェア実験Ⅰ（アセンブラの簡易 OS `simple_os.s`）: [`softexp-os`](https://github.com/KamiiAoto/softexp-os) の `sw1/`
