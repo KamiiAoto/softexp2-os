@@ -125,11 +125,11 @@ m68k-term                                                       # C-\ c → xm t
 
 | # | 機能 | 関数・仕事 | 言語 | 担当 |
 |---|---|---|---|---|
-| 1 | データ構造・キュー・デバッグ表示 | `mtk_c.h`、`addq`, `removeq`, `sched`, `sleep`, `wakeup`、ready キューとセマフォのキューを表示する関数（D3・D4 の確認用） | C | |
-| 2 | タスクの登録と開始 | `init_kernel`, `set_task`, `init_stack`, `begin_sch`、`test2.c` の `main` | C | |
-| 3 | タスクの切替え | `first_task`, `swtch` | asm | |
-| 4 | タイマ・最終テスト | `init_timer`, `hard_clock`, `skipmt`、カーネル内のタイマ割込みの扱い、2.5.7 のテストプログラム（D5） | asm・C | |
-| 5 | セマフォ | `P`, `V`, `pv_handler`（asm）、`p_body`, `v_body`（C） | asm・C | |
+| 1 | データ構造・キュー・デバッグ表示 | `mtk_c.h`、`addq`, `removeq`, `sched`, `sleep`, `wakeup`、ready キューとセマフォのキューを表示する関数（D3・D4 の確認用） | C | 松岡 |
+| 2 | タスクの登録と開始 | `init_kernel`, `set_task`, `init_stack`, `begin_sch`、`test2.c` の `main` | C | 副田 |
+| 3 | タスクの切替え | `first_task`, `swtch` | asm | 安森 |
+| 4 | タイマ・最終テスト | `init_timer`, `hard_clock`, `skipmt`、カーネル内のタイマ割込みの扱い、2.5.7 のテストプログラム（D5） | asm・C | 神井 |
+| 5 | セマフォ | `P`, `V`, `pv_handler`（asm）、`p_body`, `v_body`（C） | asm・C | 田邉 |
 
 負担がそろうように分けてある。3 は書く量は少ないが一番難しいので、D1・D3 のデバッグは 1・2 も手伝う。
 
