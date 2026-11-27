@@ -14,3 +14,11 @@ ASMGLIS		= crt0.glis mon.glis inchrw.glis outchr.glis \
 			csys68k.glis test1.glis
 
 include $(LIB_JIKKEN)/make.conf
+
+# リファレンスモニタ: mon.o は dist/ の tgz から取り出す（一番上には mon.s を置かない）。
+mon.o: dist/mon_r2_230k+sc5v2.tgz
+	tar xzf $< -O mon_r2_230k+sc5v2.o > $@
+
+# test1.LIS の材料。mon.s がないので mon.glis ができない → 空のファイルで代用する。
+mon.glis:
+	touch $@

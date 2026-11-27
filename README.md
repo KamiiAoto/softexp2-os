@@ -34,21 +34,18 @@ cd ~/mtk && git pull                                            # 作業の前�
 | 12/22(火) | テーマ2,3 試問の告示 |
 | **1/7(木)** | **テーマ2,3 レポート提出締切**・試問（1–6 班 1/7，7–12 班 1/8） |
 
-## ビルドの準備（実験室の PC，初回だけ）
+## ビルドの仕組み（実験室の PC）
 
-実験室の `/usr/local/lib/soft-jikken/make.conf` のままだと `make` がリンクで失敗する（`cannot find -lgcc`。2026-11-25 確認）。
-原因: 実験室の `m68k-elf-gcc` は 11 に更新されたが，`make.conf` が古いまま gcc 5 の場所（`-L/usr/local/lib/gcc/m68k-elf/5`）で `libgcc.a` を探している。
-また `.LIS` を作る `gal.py` が Python 2 用のままになっている。
+**clone したら `make test1`〜`test3` だけでビルドできる**（準備のコマンドは要らない）。Makefile が次の 2 つを自動でやる。
 
-Moodle で配布された修正版（`dist/soft-jikken.tgz`。gcc 11 の場所と `python3 gal3.py` に直した `make.conf`）を `~` に展開する（`dist/soft-jikken_instructions.txt`）。
+- **`~/.local/lib/soft-jikken/make.conf` がなければ，`dist/soft-jikken.tgz` を `~` に展開する**（初回だけ）。
+  実験室の `/usr/local/lib/soft-jikken/make.conf` のままだと，リンクで `cannot find -lgcc` になる。
+  原因: 実験室の `m68k-elf-gcc` は 11 に更新されたが，`make.conf` が古いまま gcc 5 の場所（`-L/usr/local/lib/gcc/m68k-elf/5`）で `libgcc.a` を探している（`5/` には `libgcc.a` がない。2026-11-27 確認）。また `.LIS` を作る `gal.py` が Python 2 用のまま。
+  `dist/soft-jikken.tgz` は Moodle で配布された修正版（gcc 11 の場所と `python3 gal3.py` に直した `make.conf`。`dist/soft-jikken_instructions.txt`）。
+- **一番上（カーネル）では，`mon.o` をリファレンスモニタの tgz から取り出し，空の `mon.glis` を作る**（下の「テーマ2・3」）。
 
-```sh
-tar xzf ~/mtk/dist/soft-jikken.tgz -C ~     # ~/.local/lib/soft-jikken/ ができる
-```
-
-一番上の `Makefile` は，Moodle で配布された `LIB_JIKKEN=~/.local/lib/soft-jikken` の版（`dist/Makefile.moodle`）にしてある。
-この `Makefile` は `$(MAKEFLAGS)` をそのまま子の make に渡すので，`make test2 LIB_JIKKEN=...` のように上書きすることはできない（`-f` がターゲット扱いになる）。
-別の場所を使うときは `make -f Makefile.2 LIB_JIKKEN=...` とする。
+一番上の `Makefile` は Moodle 版（`dist/Makefile.moodle`）をもとに，`LIB_JIKKEN ?= $(HOME)/.local/lib/soft-jikken` にして上の展開ルールを足したもの。
+子の make に `$(MAKEFLAGS)` を渡す行は消したので，`make test2 LIB_JIKKEN=...` で別の場所も指せる。
 
 ## テーマ1（個人）
 
@@ -59,7 +56,7 @@ tar xzf ~/mtk/dist/soft-jikken.tgz -C ~     # ~/.local/lib/soft-jikken/ がで�
 cd ~/mtk && git pull
 mkdir -p theme1/<名前> && cd theme1/<名前>
 tar xzf ../../dist/mtk-hina.tgz --strip-components=1   # 配布の mtk フォルダの中身をここに展開
-cp ../../dist/Makefile.moodle Makefile                 # 上の「ビルドの準備」の Makefile にする
+cp ../kamii/Makefile .                                 # soft-jikken の自動展開つきの Makefile（../../dist を見る）
 cp <ソフトウェア実験Ⅰの simple_os.s> mon.s             # 簡易 OS を mon.s にする
 ```
 
@@ -86,18 +83,16 @@ make test1        # test1.abs ができる（全部作り直すときは make cl
 一番上が班で 1 つのカーネル。配布のひな形（`dist/mtk-hina.tgz`）は展開済み。
 
 テーマ2以降は，配布のリファレンスモニタ `mon_r2_230k+sc5v2.o` に差し替えて開発する（2 ポート・230kbps・SKIPMT 対応。`dist/mon_r2_230k+sc5v2.tgz` の readme，`dist/Howto_Replace_mon.txt`）。
-`.o` は git に入らないので，clone したら各自次を打つ（`make clean` の後も同じ）。
+`.o` は git に入らないが，`Makefile.1`〜`.3` に足したルールで自動で用意されるので，**`make test2` だけでよい**（`make clean` の後も同じ）。
 
 ```sh
 cd ~/mtk
-tar xzf dist/mon_r2_230k+sc5v2.tgz -O mon_r2_230k+sc5v2.o > mon.o && touch mon.glis
 make test2
 ```
 
-- 1 つ目でモニタを取り出して `mon.o` にする。
-- `touch mon.glis` で空の `mon.glis` を作る。`Makefile.2` は `test2.LIS` を作るのに `mon.glis`（`mon.s` をアセンブルするとできるリスティング）を必要とするが，`mon.s` を置かないのでできない。空でも `gal3.py` は問題なく読む（2026-11-27 実験室で確認）。
-- `make clean` は `mon.o` も `mon.glis` も消すので，その後は上の 1 行をもう一度打つ。
-- 一番上には `mon.s` を置かない（置くと make が `mon.o` を作り直してしまう）。
+- `mon.o` がなければ `dist/mon_r2_230k+sc5v2.tgz` から取り出す（`tar xzf ... -O mon_r2_230k+sc5v2.o > mon.o`）。
+- `mon.glis` がなければ空のファイルを作る。`test2.LIS` を作るのに `mon.glis`（`mon.s` をアセンブルするとできるリスティング）が要るが，`mon.s` を置かないのでできないため。空でも `gal3.py` は問題なく読む（2026-11-27 実験室で確認）。
+- 一番上には `mon.s` を置かない（置くと make が `mon.s` から `mon.o` を作り直そうとする）。
 
 担当部分ができたら班で読み合わせ → 統合デバッグ（目安: 8日目）。
 
