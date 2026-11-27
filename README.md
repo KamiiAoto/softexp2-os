@@ -86,13 +86,18 @@ make test1        # test1.abs ができる（全部作り直すときは make cl
 一番上が班で 1 つのカーネル。配布のひな形（`dist/mtk-hina.tgz`）は展開済み。
 
 テーマ2以降は，配布のリファレンスモニタ `mon_r2_230k+sc5v2.o` に差し替えて開発する（2 ポート・230kbps・SKIPMT 対応。`dist/mon_r2_230k+sc5v2.tgz` の readme，`dist/Howto_Replace_mon.txt`）。
-`.o` は git に入らないので，clone したら各自 1 回だけ次を打つ。
+`.o` は git に入らないので，clone したら各自次を打つ（`make clean` の後も同じ）。
 
 ```sh
 cd ~/mtk
-tar xzf dist/mon_r2_230k+sc5v2.tgz -O mon_r2_230k+sc5v2.o > mon.o   # モニタを取り出して mon.o にする
+tar xzf dist/mon_r2_230k+sc5v2.tgz -O mon_r2_230k+sc5v2.o > mon.o && touch mon.glis
 make test2
 ```
+
+- 1 つ目でモニタを取り出して `mon.o` にする。
+- `touch mon.glis` で空の `mon.glis` を作る。`Makefile.2` は `test2.LIS` を作るのに `mon.glis`（`mon.s` をアセンブルするとできるリスティング）を必要とするが，`mon.s` を置かないのでできない。空でも `gal3.py` は問題なく読む（2026-11-27 実験室で確認）。
+- `make clean` は `mon.o` も `mon.glis` も消すので，その後は上の 1 行をもう一度打つ。
+- 一番上には `mon.s` を置かない（置くと make が `mon.o` を作り直してしまう）。
 
 担当部分ができたら班で読み合わせ → 統合デバッグ（目安: 8日目）。
 
