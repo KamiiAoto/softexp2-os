@@ -1,0 +1,20 @@
+モニタオブジェクトの差し替え方法
+
+ + mon_r2_230k+sc5v2.tgz の入手
+ + 端末ウィンドウで以下のコマンドを実行
+   + tar xfz mon_r2_230k+sc5v2.tgz
+   + cp mon_r2_230k+sc5v2.o mon.o
+   + touch mon.o
+   + make test1  or  make test2  or  make test3
+
+--
+How to replace monitor object file
+
+ + Get mon_r2_230k+sc5v2.tgz
+ + Execute following commands in the terminal window
+   + tar xfz mon_r2_230k+sc5v2.tgz
+   + cp mon_r2_230k+sc5v2.o mon.o
+   + touch mon.o
+   + make test1  or  make test2  or  make test3
+
+

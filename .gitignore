@@ -1,0 +1,17 @@
+# ビルドの生成物（ソースから再生成できるので管理しない）
+*.abs
+*.LIS
+*.lis
+*.glis
+*.hex
+*.o
+*.map
+.depend
+video
+
+# エディタ・OS のゴミ
+*~
+\#*\#
+.\#*
+.DS_Store
+.vscode/
